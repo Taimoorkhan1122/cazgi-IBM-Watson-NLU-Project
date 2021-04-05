@@ -6,7 +6,7 @@ const getNLUInstance = () => {
     let api_url = process.env.API_URL;
 
     const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
-    const {IamAuthenticator} = require('ibm-watson/auth');
+    const { IamAuthenticator } = require('ibm-watson/auth');
 
     const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
         version: "2020-08-01",
@@ -18,6 +18,10 @@ const getNLUInstance = () => {
     return naturalLanguageUnderstanding;
 }
 
+
+// initializing NLU instance
+const NLU = getNLUInstance();
+
 const app = new express();
 
 app.use(express.static('client'))
@@ -25,25 +29,59 @@ app.use(express.static('client'))
 const cors_app = require('cors');
 app.use(cors_app());
 
-app.get("/",(req,res)=>{
-    res.render('index.html');
-  });
-
-app.get("/url/emotion", (req,res) => {
-
-    return res.send({"happy":"90","sad":"10"});
+// @GET /
+app.get("/", (req, res) => {
+    return res.render('index.html');
 });
 
-app.get("/url/sentiment", (req,res) => {
-    return res.send("url sentiment for "+req.query.url);
+// @GET /url/emotions
+app.get("/url/emotion", (req, res) => {
+    const text = req.url;
+    
+    const params = {
+        'text': text,
+        'features': {
+            "emotion": {
+                'document': true
+            }
+        }
+    }
+
+    NLU.analyze(params)
+        .then(response => res.send(response.result))
+        .catch(error => {
+            console.log("error in respones", error)
+            return res.status(500).send({ success: false, message: "something went wrong" })
+        });
 });
 
-app.get("/text/emotion", (req,res) => {
-    return res.send({"happy":"10","sad":"90"});
+// @GET /url/sentiments
+app.get("/url/sentiment", (req, res) => {
+     const text = req.url;
+    
+    const params = {
+        'text': text,
+        'features': {
+            "sentiment": {
+                'document': true
+            }
+        }
+    }
+
+    NLU.analyze(params)
+        .then(response => res.send(response.result))
+        .catch(error => {
+            console.log("error in respones", error)
+            return res.status(500).send({ success: false, message: "something went wrong" })
+        });
 });
 
-app.get("/text/sentiment", (req,res) => {
-    return res.send("text sentiment for "+req.query.text);
+app.get("/text/emotion", (req, res) => {
+    return res.send({ "happy": "10", "sad": "90" });
+});
+
+app.get("/text/sentiment", (req, res) => {
+    return res.send("text sentiment for " + req.query.text);
 });
 
 let server = app.listen(8080, () => {
