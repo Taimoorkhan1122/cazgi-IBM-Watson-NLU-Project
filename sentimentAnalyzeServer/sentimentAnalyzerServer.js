@@ -76,12 +76,46 @@ app.get("/url/sentiment", (req, res) => {
         });
 });
 
+// @GET /text/emotion
 app.get("/text/emotion", (req, res) => {
-    return res.send({ "happy": "10", "sad": "90" });
+     const text = req.url;
+     
+    const params = {
+        'text': text,
+        'features': {
+            "emotion": {
+                'document': true
+            }
+        }
+    }
+
+    NLU.analyze(params)
+        .then(response => res.send(response.result))
+        .catch(error => {
+            console.log("error in respones", error)
+            return res.status(500).send({ success: false, message: "something went wrong" })
+        });
 });
 
+// @GET text/sentiment
 app.get("/text/sentiment", (req, res) => {
-    return res.send("text sentiment for " + req.query.text);
+    const text = req.url;
+    
+    const params = {
+        'text': text,
+        'features': {
+            "sentiment": {
+                'document': true
+            }
+        }
+    }
+
+    NLU.analyze(params)
+        .then(response => res.send(response.result))
+        .catch(error => {
+            console.log("error in respones", error)
+            return res.status(500).send({ success: false, message: "something went wrong" })
+        });
 });
 
 let server = app.listen(8080, () => {
