@@ -36,10 +36,11 @@ app.get("/", (req, res) => {
 
 // @GET /url/emotions
 app.get("/url/emotion", (req, res) => {
-    const text = req.url;
-    
+    const url = req.query.url;
+    console.log("RESPONSE =====> ",url);
+
     const params = {
-        'text': text,
+        'url': url,
         'features': {
             "emotion": {
                 'document': true
@@ -57,29 +58,30 @@ app.get("/url/emotion", (req, res) => {
 
 // @GET /url/sentiments
 app.get("/url/sentiment", (req, res) => {
-     const text = req.url;
-    
-    const params = {
-        'text': text,
-        'features': {
-            "sentiment": {
+     const url = req.query.url;
+     console.log("RESPONSE =====> ", url);
+     
+     const params = {
+         'url': url,
+         'features': {
+             "sentiment": {
                 'document': true
             }
         }
     }
-
+    
     NLU.analyze(params)
-        .then(response => res.send(response.result))
+    .then(response => res.send(response.result))
         .catch(error => {
             console.log("error in respones", error)
             return res.status(500).send({ success: false, message: "something went wrong" })
         });
-});
-
-// @GET /text/emotion
-app.get("/text/emotion", (req, res) => {
-     const text = req.url;
-     
+    });
+    
+    // @GET /text/emotion
+    app.get("/text/emotion", (req, res) => {
+        const text = req.query.text;
+        
     const params = {
         'text': text,
         'features': {
@@ -99,7 +101,7 @@ app.get("/text/emotion", (req, res) => {
 
 // @GET text/sentiment
 app.get("/text/sentiment", (req, res) => {
-    const text = req.url;
+    const text = req.query.text;
     
     const params = {
         'text': text,
